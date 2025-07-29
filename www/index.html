@@ -1,0 +1,813 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bomb Tattoo Shop</title>
+    
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#dc2626">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Bomb Tattoo">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%23000'/><circle cx='50' cy='40' r='15' fill='%23dc2626'/><rect x='40' y='55' width='20' height='8' fill='%23dc2626'/><text y='80' x='50' text-anchor='middle' dy='0.35em' font-size='12' fill='white' font-weight='bold'>BOMB</text></svg>">
+    <link rel="manifest" href="manifest.json">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #000000 0%, #1a1a1a 50%, #000000 100%);
+            min-height: 100vh;
+            color: #fff;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(220, 38, 38, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(220, 38, 38, 0.1) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+            position: relative;
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            margin-bottom: 10px;
+            text-shadow: 
+                0 0 10px rgba(220, 38, 38, 0.8),
+                0 0 20px rgba(220, 38, 38, 0.6),
+                0 0 30px rgba(220, 38, 38, 0.4);
+            font-weight: 900;
+            letter-spacing: 3px;
+            color: #dc2626;
+            background: linear-gradient(45deg, #dc2626, #ffffff, #dc2626);
+            background-size: 200% 200%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: gradientShift 3s ease-in-out infinite;
+        }
+
+        @keyframes gradientShift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        .header .bomb-icon {
+            display: inline-block;
+            font-size: 2rem;
+            margin-right: 15px;
+            filter: drop-shadow(0 0 10px rgba(220, 38, 38, 0.8));
+        }
+
+        .header p {
+            color: #cccccc;
+            font-size: 1.1rem;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .nav-tabs {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+
+        .tab-btn {
+            padding: 14px 28px;
+            background: linear-gradient(135deg, rgba(0,0,0,0.8), rgba(26,26,26,0.8));
+            color: white;
+            border: 2px solid #dc2626;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .tab-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(220, 38, 38, 0.3), transparent);
+            transition: left 0.5s;
+        }
+
+        .tab-btn:hover::before {
+            left: 100%;
+        }
+
+        .tab-btn:hover {
+            background: linear-gradient(135deg, #dc2626, #b91c1c);
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(220, 38, 38, 0.4);
+        }
+
+        .tab-btn.active {
+            background: linear-gradient(135deg, #dc2626, #b91c1c);
+            color: white;
+            border-color: #dc2626;
+            box-shadow: 0 0 20px rgba(220, 38, 38, 0.6);
+        }
+
+        .tab-content {
+            display: none;
+            background: linear-gradient(135deg, rgba(255,255,255,0.95), rgba(248,248,248,0.95));
+            border: 2px solid #dc2626;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 
+                0 15px 35px rgba(0,0,0,0.3),
+                0 0 0 1px rgba(220, 38, 38, 0.1);
+            backdrop-filter: blur(10px);
+            color: #1a1a1a;
+            position: relative;
+        }
+
+        .tab-content::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #dc2626, #000000, #dc2626);
+            border-radius: 15px 15px 0 0;
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #1a1a1a;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-size: 0.9rem;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #dc2626;
+            box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1);
+            transform: translateY(-1px);
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #dc2626, #b91c1c);
+            color: white;
+            padding: 14px 28px;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+            display: inline-block;
+            text-decoration: none;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(220, 38, 38, 0.3);
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .btn:hover::before {
+            left: 100%;
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(220, 38, 38, 0.4);
+            background: linear-gradient(135deg, #b91c1c, #991b1b);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #1a1a1a, #000000);
+            border: 2px solid #dc2626;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: linear-gradient(135deg, #dc2626, #b91c1c);
+            border-color: #dc2626;
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #7f1d1d, #991b1b);
+            border: 2px solid #dc2626;
+        }
+
+        .appointments-grid {
+            display: grid;
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .appointment-card {
+            background: linear-gradient(135deg, #f8f8f8, #ffffff);
+            padding: 20px;
+            border-radius: 12px;
+            border-left: 6px solid #dc2626;
+            border: 1px solid #e0e0e0;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .appointment-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, #dc2626, #000000, #dc2626);
+        }
+
+        .appointment-card:hover {
+            transform: translateX(8px) translateY(-2px);
+            box-shadow: 0 8px 25px rgba(220, 38, 38, 0.15);
+            border-color: #dc2626;
+        }
+
+        .appointment-header {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .appointment-status {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .status-pending {
+            background: linear-gradient(135deg, #fed7aa, #fdba74);
+            color: #9a3412;
+            border: 1px solid #ea580c;
+        }
+
+        .status-confirmed {
+            background: linear-gradient(135deg, #dcfce7, #bbf7d0);
+            color: #166534;
+            border: 1px solid #16a34a;
+        }
+
+        .status-completed {
+            background: linear-gradient(135deg, #e0e7ff, #c7d2fe);
+            color: #3730a3;
+            border: 1px solid #4f46e5;
+        }
+
+        .client-info {
+            background: linear-gradient(135deg, rgba(220,38,38,0.05), rgba(255,255,255,0.8));
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            border: 1px solid rgba(220,38,38,0.1);
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+        }
+
+        .modal-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .close {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            font-size: 24px;
+            cursor: pointer;
+            color: #999;
+        }
+
+        .success-message {
+            background: linear-gradient(135deg, #dc2626, #b91c1c);
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+            border: 2px solid #7f1d1d;
+            font-weight: bold;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(220, 38, 38, 0.3);
+        }
+
+        .artist-schedule {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .time-slot {
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .time-slot:hover {
+            border-color: #dc2626;
+            background: linear-gradient(135deg, rgba(220,38,38,0.1), rgba(255,255,255,0.9));
+            transform: translateY(-2px);
+        }
+
+        .time-slot.booked {
+            background: linear-gradient(135deg, #fecaca, #fca5a5);
+            border-color: #dc2626;
+            cursor: not-allowed;
+            color: #7f1d1d;
+        }
+
+        .time-slot.selected {
+            background: linear-gradient(135deg, #dc2626, #b91c1c);
+            color: white;
+            border-color: #dc2626;
+            box-shadow: 0 4px 15px rgba(220, 38, 38, 0.3);
+        }
+
+        @media (max-width: 768px) {
+            .nav-tabs {
+                flex-wrap: wrap;
+            }
+            
+            .tab-btn {
+                font-size: 14px;
+                padding: 10px 16px;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><span class="bomb-icon">💣</span>BOMB TATTOO SHOP</h1>
+            <p>Premium Ink • Bold Art • Explosive Style</p>
+        </div>
+
+        <div class="nav-tabs">
+            <button class="tab-btn active" onclick="showTab('client')">Client Portal</button>
+            <button class="tab-btn" onclick="showTab('artist')">Artist Dashboard</button>
+            <button class="tab-btn" onclick="showTab('checkin')">Check-In</button>
+        </div>
+
+        <!-- Client Portal Tab -->
+        <div id="client" class="tab-content active">
+            <h2>💣 Book Your Explosive Artwork</h2>
+            <div class="success-message" id="clientSuccess">
+                🔥 BOOM! Your appointment request has been submitted! One of our artists will get back to you soon.
+            </div>
+            
+            <form id="appointmentForm">
+                <div class="form-group">
+                    <label for="clientName">Full Name *</label>
+                    <input type="text" id="clientName" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="clientEmail">Email Address *</label>
+                    <input type="email" id="clientEmail" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="clientPhone">Phone Number *</label>
+                    <input type="tel" id="clientPhone" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="preferredArtist">💀 Preferred Artist</label>
+                    <select id="preferredArtist">
+                        <option value="">Any Available Bomb Artist</option>
+                        <option value="Raven Steel">Raven Steel - Dark Arts & Horror</option>
+                        <option value="Skull Martinez">Skull Martinez - Traditional & Americana</option>
+                        <option value="Phoenix Black">Phoenix Black - Realism & Portraits</option>
+                        <option value="Viper Cross">Viper Cross - Geometric & Tribal</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="tattooType">🎨 Tattoo Style/Type</label>
+                    <select id="tattooType">
+                        <option value="traditional">Traditional/Old School</option>
+                        <option value="realism">Realism & Portraits</option>
+                        <option value="horror">Horror & Dark Arts</option>
+                        <option value="blackgrey">Black & Grey</option>
+                        <option value="tribal">Tribal & Geometric</option>
+                        <option value="biomechanical">Biomechanical</option>
+                        <option value="skull">Skulls & Gothic</option>
+                        <option value="other">Other Explosive Style</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="tattooSize">Estimated Size</label>
+                    <select id="tattooSize">
+                        <option value="small">Small (2-4 inches)</option>
+                        <option value="medium">Medium (4-8 inches)</option>
+                        <option value="large">Large (8+ inches)</option>
+                        <option value="sleeve">Sleeve/Large Piece</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="preferredDate">Preferred Date</label>
+                    <input type="date" id="preferredDate">
+                </div>
+                
+                <div class="form-group">
+                    <label for="description">💭 Describe Your Bomb Artwork</label>
+                    <textarea id="description" rows="4" placeholder="Tell us about your explosive tattoo idea - style, placement, size, colors, references. The more details, the better we can bring your vision to life!"></textarea>
+                </div>
+                
+                <button type="submit" class="btn">💣 SUBMIT REQUEST</button>
+            </form>
+        </div>
+
+        <!-- Artist Dashboard Tab -->
+        <div id="artist" class="tab-content">
+            <h2>💀 Artist War Room</h2>
+            
+            <div class="form-group">
+                <label for="artistLogin">🎯 Select Your Profile</label>
+                <select id="artistLogin" onchange="loadArtistAppointments()">
+                    <option value="">Select Artist</option>
+                    <option value="Raven Steel">Raven Steel</option>
+                    <option value="Skull Martinez">Skull Martinez</option>
+                    <option value="Phoenix Black">Phoenix Black</option>
+                    <option value="Viper Cross">Viper Cross</option>
+                </select>
+            </div>
+
+            <div id="artistAppointments" class="appointments-grid">
+                <p>Select your artist profile to view your explosive bookings.</p>
+            </div>
+        </div>
+
+        <!-- Check-In Tab -->
+        <div id="checkin" class="tab-content">
+            <h2>🔥 Bomb Squad Check-In</h2>
+            <p>Ready for your session? Check in and let your artist know you've arrived!</p>
+            
+            <div class="success-message" id="checkinSuccess">
+                💥 CHECKED IN! Your artist has been notified - get ready for some explosive ink!
+            </div>
+            
+            <form id="checkinForm">
+                <div class="form-group">
+                    <label for="checkinName">Full Name *</label>
+                    <input type="text" id="checkinName" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="checkinEmail">Email Address *</label>
+                    <input type="email" id="checkinEmail" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="appointmentTime">Appointment Time</label>
+                    <input type="datetime-local" id="appointmentTime" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="checkinArtist">💀 Your Artist</label>
+                    <select id="checkinArtist" required>
+                        <option value="">Select Your Bomb Artist</option>
+                        <option value="Raven Steel">Raven Steel</option>
+                        <option value="Skull Martinez">Skull Martinez</option>
+                        <option value="Phoenix Black">Phoenix Black</option>
+                        <option value="Viper Cross">Viper Cross</option>
+                    </select>
+                </div>
+                
+                <button type="submit" class="btn">💣 CHECK IN</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal for appointment details -->
+    <div id="appointmentModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <h3>Appointment Details</h3>
+            <div id="modalContent"></div>
+        </div>
+    </div>
+
+    <script>
+        // Sample data storage (in a real app, this would be a backend database)
+        let appointments = [
+            {
+                id: 1,
+                clientName: "Alex Thunder",
+                clientEmail: "alex@email.com",
+                clientPhone: "(555) 123-4567",
+                artist: "Raven Steel",
+                tattooType: "horror",
+                size: "medium",
+                date: "2025-08-05",
+                time: "14:00",
+                description: "Realistic skull with roses on forearm",
+                status: "pending"
+            },
+            {
+                id: 2,
+                clientName: "Maria Venom",
+                clientEmail: "maria@email.com",
+                clientPhone: "(555) 987-6543",
+                artist: "Phoenix Black",
+                tattooType: "realism",
+                size: "large",
+                date: "2025-08-03",
+                time: "10:00",
+                description: "Portrait memorial piece with gothic elements",
+                status: "confirmed"
+            }
+        ];
+
+        let checkins = [];
+
+        // Tab switching functionality
+        function showTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Remove active class from all buttons
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // Show selected tab
+            document.getElementById(tabName).classList.add('active');
+            
+            // Add active class to clicked button
+            event.target.classList.add('active');
+        }
+
+        // Client appointment form submission
+        document.getElementById('appointmentForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const newAppointment = {
+                id: appointments.length + 1,
+                clientName: document.getElementById('clientName').value,
+                clientEmail: document.getElementById('clientEmail').value,
+                clientPhone: document.getElementById('clientPhone').value,
+                artist: document.getElementById('preferredArtist').value || "Any Available Bomb Artist",
+                tattooType: document.getElementById('tattooType').value,
+                size: document.getElementById('tattooSize').value,
+                date: document.getElementById('preferredDate').value,
+                time: "TBD",
+                description: document.getElementById('description').value,
+                status: "pending"
+            };
+            
+            appointments.push(newAppointment);
+            
+            // Show success message
+            document.getElementById('clientSuccess').style.display = 'block';
+            
+            // Reset form
+            this.reset();
+            
+            // Hide success message after 3 seconds
+            setTimeout(() => {
+                document.getElementById('clientSuccess').style.display = 'none';
+            }, 3000);
+        });
+
+        // Check-in form submission
+        document.getElementById('checkinForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const checkin = {
+                name: document.getElementById('checkinName').value,
+                email: document.getElementById('checkinEmail').value,
+                appointmentTime: document.getElementById('appointmentTime').value,
+                artist: document.getElementById('checkinArtist').value,
+                checkinTime: new Date().toLocaleString()
+            };
+            
+            checkins.push(checkin);
+            
+            // Show success message
+            document.getElementById('checkinSuccess').style.display = 'block';
+            
+            // Reset form
+            this.reset();
+            
+            // Hide success message after 3 seconds
+            setTimeout(() => {
+                document.getElementById('checkinSuccess').style.display = 'none';
+            }, 3000);
+        });
+
+        // Load artist appointments
+        function loadArtistAppointments() {
+            const selectedArtist = document.getElementById('artistLogin').value;
+            const container = document.getElementById('artistAppointments');
+            
+            if (!selectedArtist) {
+                container.innerHTML = '<p>Select your artist profile to view your explosive bookings.</p>';
+                return;
+            }
+            
+            const artistAppointments = appointments.filter(apt => 
+                apt.artist === selectedArtist || apt.artist === "Any Available Bomb Artist"
+            );
+            
+            if (artistAppointments.length === 0) {
+                container.innerHTML = '<p>No appointments found.</p>';
+                return;
+            }
+            
+            container.innerHTML = artistAppointments.map(apt => `
+                <div class="appointment-card">
+                    <div class="appointment-header">
+                        <h3>${apt.clientName}</h3>
+                        <span class="appointment-status status-${apt.status}">${apt.status}</span>
+                    </div>
+                    <div class="client-info">
+                        <p><strong>📧 Email:</strong> ${apt.clientEmail}</p>
+                        <p><strong>📱 Phone:</strong> ${apt.clientPhone}</p>
+                        <p><strong>🎨 Style:</strong> ${apt.tattooType} (${apt.size})</p>
+                        <p><strong>📅 Date:</strong> ${apt.date || 'Not scheduled'}</p>
+                        <p><strong>💭 Description:</strong> ${apt.description}</p>
+                    </div>
+                    <div class="action-buttons">
+                        <button class="btn btn-secondary" onclick="confirmAppointment(${apt.id})">
+                            ${apt.status === 'pending' ? 'Confirm' : 'Reschedule'}
+                        </button>
+                        <button class="btn" onclick="viewDetails(${apt.id})">View Details</button>
+                        ${apt.status === 'confirmed' ? 
+                            '<button class="btn btn-secondary" onclick="markCompleted(' + apt.id + ')">Mark Complete</button>' : ''
+                        }
+                        <button class="btn btn-danger" onclick="cancelAppointment(${apt.id})">Cancel</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Appointment management functions
+        function confirmAppointment(id) {
+            const appointment = appointments.find(apt => apt.id === id);
+            if (appointment) {
+                appointment.status = 'confirmed';
+                appointment.time = prompt('💀 Set appointment time (e.g., 14:00):') || 'TBD';
+                loadArtistAppointments();
+                alert(`💣 BOOM! Appointment confirmed for ${appointment.clientName}. Explosive email notification sent!`);
+            }
+        }
+
+        function markCompleted(id) {
+            const appointment = appointments.find(apt => apt.id === id);
+            if (appointment) {
+                appointment.status = 'completed';
+                loadArtistAppointments();
+                alert('🔥 Explosive artwork completed! Another satisfied bomb squad member!');
+            }
+        }
+
+        function cancelAppointment(id) {
+            if (confirm('💥 Are you sure you want to cancel this explosive appointment?')) {
+                appointments = appointments.filter(apt => apt.id !== id);
+                loadArtistAppointments();
+                alert('💣 Appointment cancelled. Notification sent to client.');
+            }
+        }
+
+        function viewDetails(id) {
+            const appointment = appointments.find(apt => apt.id === id);
+            if (appointment) {
+                document.getElementById('modalContent').innerHTML = `
+                    <h4>${appointment.clientName}</h4>
+                    <p><strong>Email:</strong> ${appointment.clientEmail}</p>
+                    <p><strong>Phone:</strong> ${appointment.clientPhone}</p>
+                    <p><strong>Style:</strong> ${appointment.tattooType}</p>
+                    <p><strong>Size:</strong> ${appointment.size}</p>
+                    <p><strong>Date:</strong> ${appointment.date || 'TBD'}</p>
+                    <p><strong>Time:</strong> ${appointment.time}</p>
+                    <p><strong>Description:</strong> ${appointment.description}</p>
+                    <p><strong>Status:</strong> ${appointment.status}</p>
+                `;
+                document.getElementById('appointmentModal').style.display = 'block';
+            }
+        }
+
+        function closeModal() {
+            document.getElementById('appointmentModal').style.display = 'none';
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('appointment

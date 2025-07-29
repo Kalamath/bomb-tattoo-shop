@@ -1,0 +1,34 @@
+{
+  "name": "bomb-tattoo-app",
+  "version": "1.0.0",
+  "description": "Bomb Tattoo Shop Mobile App",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "echo 'Build complete - files already in www'",
+    "sync": "cap sync",
+    "sync:android": "cap sync android",
+    "sync:ios": "cap sync ios",
+    "android": "cap open android",
+    "ios": "cap open ios",
+    "serve": "cd www && python3 -m http.server 8000"
+  },
+  "keywords": [
+    "tattoo",
+    "mobile-app",
+    "capacitor",
+    "pwa"
+  ],
+  "author": "Bomb Tattoo Shop",
+  "license": "ISC",
+  "dependencies": {
+    "@capacitor/android": "^7.4.2",
+    "@capacitor/cli": "^7.4.2",
+    "@capacitor/core": "^7.4.2",
+    "@capacitor/ios": "^7.4.2",
+    "@capacitor/app": "^7.0.0",
+    "@capacitor/haptics": "^7.0.0",
+    "@capacitor/keyboard": "^7.0.0",
+    "@capacitor/status-bar": "^7.0.0"
+  }
+}
