@@ -13,6 +13,9 @@
     <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%23000'/><circle cx='50' cy='40' r='15' fill='%23dc2626'/><rect x='40' y='55' width='20' height='8' fill='%23dc2626'/><text y='80' x='50' text-anchor='middle' dy='0.35em' font-size='12' fill='white' font-weight='bold'>BOMB</text></svg>">
     <link rel="manifest" href="manifest.json">
     
+    <!-- EmailJS for sending emails -->
+    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+    
     <style>
         * {
             margin: 0;
@@ -609,14 +612,7 @@
         </div>
     </div>
 
-    <!-- EmailJS for sending emails -->
-    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
     <script>
-        // Initialize EmailJS
-        (function(){
-            emailjs.init("YOUR_EMAILJS_PUBLIC_KEY"); // Replace with your actual public key
-        })();
-    </script>
         // Artist email configuration
         const artistEmails = {
             'Bullet': 'bullet@bombtattoo.com',
@@ -635,8 +631,29 @@
             publicKey: 'YOUR_EMAILJS_PUBLIC_KEY'
         };
 
+        // Initialize EmailJS when it loads
+        function initializeEmailJS() {
+            if (typeof emailjs !== 'undefined' && emailConfig.publicKey !== 'YOUR_EMAILJS_PUBLIC_KEY') {
+                emailjs.init(emailConfig.publicKey);
+                console.log('EmailJS initialized successfully');
+            }
+        }
+
         // Function to send email notification
         function sendEmailNotification(appointment, type = 'new') {
+            // Check if EmailJS is available and configured
+            if (typeof emailjs === 'undefined') {
+                console.log('EmailJS not loaded - email functionality disabled');
+                console.log('Would send email for:', appointment.clientName, 'to artist:', appointment.artist);
+                return;
+            }
+
+            if (emailConfig.publicKey === 'YOUR_EMAILJS_PUBLIC_KEY') {
+                console.log('EmailJS not configured - please set up your EmailJS credentials');
+                console.log('Would send email for:', appointment.clientName, 'to artist:', appointment.artist);
+                return;
+            }
+
             const artistEmail = artistEmails[appointment.artist] || 'info@bombtattoo.com';
             
             const templateParams = {
@@ -653,22 +670,41 @@
                 subject: `${type === 'new' ? 'New' : 'Updated'} Appointment Request - ${appointment.clientName}`
             };
 
-            // Note: EmailJS needs to be loaded for this to work
-            // Add this script tag to your HTML head:
-            // <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
-            
-            if (typeof emailjs !== 'undefined') {
-                emailjs.send(emailConfig.serviceID, emailConfig.templateID, templateParams, emailConfig.publicKey)
-                    .then(() => {
-                        console.log('Email sent successfully!');
-                    })
-                    .catch((error) => {
-                        console.error('Email failed to send:', error);
-                    });
-            } else {
-                console.log('EmailJS not loaded - would send email to:', artistEmail);
-                console.log('Email content:', templateParams);
+            emailjs.send(emailConfig.serviceID, emailConfig.templateID, templateParams, emailConfig.publicKey)
+                .then(() => {
+                    console.log('Email sent successfully to:', artistEmail);
+                })
+                .catch((error) => {
+                    console.error('Email failed to send:', error);
+                });
+        }
+
+        // Function to send confirmation email to client
+        function sendClientConfirmationEmail(appointment) {
+            // Check if EmailJS is available and configured
+            if (typeof emailjs === 'undefined' || emailConfig.publicKey === 'YOUR_EMAILJS_PUBLIC_KEY') {
+                console.log('EmailJS not configured - would send confirmation email to:', appointment.clientEmail);
+                return;
             }
+
+            const templateParams = {
+                to_email: appointment.clientEmail,
+                client_name: appointment.clientName,
+                artist_name: appointment.artist,
+                appointment_date: appointment.date,
+                appointment_time: appointment.time,
+                tattoo_description: appointment.description,
+                shop_name: 'Bomb Tattoo Shop',
+                subject: `Appointment Confirmed - ${appointment.date} at ${appointment.time}`
+            };
+
+            emailjs.send(emailConfig.serviceID, 'client_confirmation_template', templateParams, emailConfig.publicKey)
+                .then(() => {
+                    console.log('Client confirmation email sent to:', appointment.clientEmail);
+                })
+                .catch((error) => {
+                    console.error('Client email failed:', error);
+                });
         }
 
         // Sample data storage with updated artist names
@@ -848,33 +884,7 @@
                 sendClientConfirmationEmail(appointment);
                 
                 loadArtistAppointments();
-                alert(`💣 BOOM! Appointment confirmed for ${appointment.clientName}. Explosive email notification sent!`);
-            }
-        }
-
-        // Function to send confirmation email to client
-        function sendClientConfirmationEmail(appointment) {
-            const templateParams = {
-                to_email: appointment.clientEmail,
-                client_name: appointment.clientName,
-                artist_name: appointment.artist,
-                appointment_date: appointment.date,
-                appointment_time: appointment.time,
-                tattoo_description: appointment.description,
-                shop_name: 'Bomb Tattoo Shop',
-                subject: `Appointment Confirmed - ${appointment.date} at ${appointment.time}`
-            };
-
-            if (typeof emailjs !== 'undefined') {
-                emailjs.send(emailConfig.serviceID, 'client_confirmation_template', templateParams, emailConfig.publicKey)
-                    .then(() => {
-                        console.log('Client confirmation email sent!');
-                    })
-                    .catch((error) => {
-                        console.error('Client email failed:', error);
-                    });
-            } else {
-                console.log('Would send confirmation email to client:', appointment.clientEmail);
+                alert(`💣 BOOM! Appointment confirmed for ${appointment.clientName}. Email notification attempted!`);
             }
         }
 
@@ -958,6 +968,11 @@
         });
 
         document.body.appendChild(installBtn);
+
+        // Initialize EmailJS when the page loads
+        window.addEventListener('load', () => {
+            initializeEmailJS();
+        });
 
         // Register Service Worker for PWA
         if ('serviceWorker' in navigator) {
