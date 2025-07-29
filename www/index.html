@@ -487,15 +487,17 @@
                     <label for="preferredArtist">💀 Preferred Artist</label>
                     <select id="preferredArtist">
                         <option value="">Any Available Bomb Artist</option>
-                        <option value="Raven Steel">Raven Steel - Dark Arts & Horror</option>
-                        <option value="Skull Martinez">Skull Martinez - Traditional & Americana</option>
-                        <option value="Phoenix Black">Phoenix Black - Realism & Portraits</option>
-                        <option value="Viper Cross">Viper Cross - Geometric & Tribal</option>
+                        <option value="Bullet">Bullet - Dark Arts & Horror</option>
+                        <option value="PnK">PnK - Traditional & Americana</option>
+                        <option value="Zann">Zann - Realism & Portraits</option>
+                        <option value="LaLa">LaLa - Geometric & Tribal</option>
+                        <option value="Marty">Marty - Black & Grey</option>
+                        <option value="Choo">Choo - Laser Removal</option>
                     </select>
                 </div>
                 
                 <div class="form-group">
-                    <label for="tattooType">🎨 Tattoo Style/Type</label>
+                    <label for="tattooType">🎨 Service Type</label>
                     <select id="tattooType">
                         <option value="traditional">Traditional/Old School</option>
                         <option value="realism">Realism & Portraits</option>
@@ -504,6 +506,7 @@
                         <option value="tribal">Tribal & Geometric</option>
                         <option value="biomechanical">Biomechanical</option>
                         <option value="skull">Skulls & Gothic</option>
+                        <option value="laser-removal">Laser Removal</option>
                         <option value="other">Other Explosive Style</option>
                     </select>
                 </div>
@@ -524,8 +527,8 @@
                 </div>
                 
                 <div class="form-group">
-                    <label for="description">💭 Describe Your Bomb Artwork</label>
-                    <textarea id="description" rows="4" placeholder="Tell us about your explosive tattoo idea - style, placement, size, colors, references. The more details, the better we can bring your vision to life!"></textarea>
+                    <label for="description">💭 Describe Your Service Request</label>
+                    <textarea id="description" rows="4" placeholder="Tell us about your tattoo idea OR laser removal needs - style, placement, size, colors, references, number of sessions, etc. The more details, the better we can help you!"></textarea>
                 </div>
                 
                 <button type="submit" class="btn">💣 SUBMIT REQUEST</button>
@@ -540,10 +543,12 @@
                 <label for="artistLogin">🎯 Select Your Profile</label>
                 <select id="artistLogin" onchange="loadArtistAppointments()">
                     <option value="">Select Artist</option>
-                    <option value="Raven Steel">Raven Steel</option>
-                    <option value="Skull Martinez">Skull Martinez</option>
-                    <option value="Phoenix Black">Phoenix Black</option>
-                    <option value="Viper Cross">Viper Cross</option>
+                    <option value="Bullet">Bullet</option>
+                    <option value="PnK">PnK</option>
+                    <option value="Zann">Zann</option>
+                    <option value="LaLa">LaLa</option>
+                    <option value="Marty">Marty</option>
+                    <option value="Choo">Choo</option>
                 </select>
             </div>
 
@@ -581,10 +586,12 @@
                     <label for="checkinArtist">💀 Your Artist</label>
                     <select id="checkinArtist" required>
                         <option value="">Select Your Bomb Artist</option>
-                        <option value="Raven Steel">Raven Steel</option>
-                        <option value="Skull Martinez">Skull Martinez</option>
-                        <option value="Phoenix Black">Phoenix Black</option>
-                        <option value="Viper Cross">Viper Cross</option>
+                        <option value="Bullet">Bullet</option>
+                        <option value="PnK">PnK</option>
+                        <option value="Zann">Zann</option>
+                        <option value="LaLa">LaLa</option>
+                        <option value="Marty">Marty</option>
+                        <option value="Choo">Choo</option>
                     </select>
                 </div>
                 
@@ -602,15 +609,76 @@
         </div>
     </div>
 
+    <!-- EmailJS for sending emails -->
+    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
     <script>
-        // Sample data storage (in a real app, this would be a backend database)
+        // Initialize EmailJS
+        (function(){
+            emailjs.init("YOUR_EMAILJS_PUBLIC_KEY"); // Replace with your actual public key
+        })();
+    </script>
+        // Artist email configuration
+        const artistEmails = {
+            'Bullet': 'bullet@bombtattoo.com',
+            'PnK': 'pnk@bombtattoo.com', 
+            'Zann': 'zann@bombtattoo.com',
+            'LaLa': 'lala@bombtattoo.com',
+            'Marty': 'marty@bombtattoo.com',
+            'Choo': 'choo@bombtattoo.com'
+        };
+
+        // EmailJS configuration - You'll need to set this up
+        // Go to emailjs.com and get your service ID, template ID, and public key
+        const emailConfig = {
+            serviceID: 'YOUR_EMAILJS_SERVICE_ID',
+            templateID: 'YOUR_EMAILJS_TEMPLATE_ID',
+            publicKey: 'YOUR_EMAILJS_PUBLIC_KEY'
+        };
+
+        // Function to send email notification
+        function sendEmailNotification(appointment, type = 'new') {
+            const artistEmail = artistEmails[appointment.artist] || 'info@bombtattoo.com';
+            
+            const templateParams = {
+                to_email: artistEmail,
+                artist_name: appointment.artist,
+                client_name: appointment.clientName,
+                client_email: appointment.clientEmail,
+                client_phone: appointment.clientPhone,
+                tattoo_type: appointment.tattooType,
+                tattoo_size: appointment.size,
+                preferred_date: appointment.date,
+                description: appointment.description,
+                notification_type: type,
+                subject: `${type === 'new' ? 'New' : 'Updated'} Appointment Request - ${appointment.clientName}`
+            };
+
+            // Note: EmailJS needs to be loaded for this to work
+            // Add this script tag to your HTML head:
+            // <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+            
+            if (typeof emailjs !== 'undefined') {
+                emailjs.send(emailConfig.serviceID, emailConfig.templateID, templateParams, emailConfig.publicKey)
+                    .then(() => {
+                        console.log('Email sent successfully!');
+                    })
+                    .catch((error) => {
+                        console.error('Email failed to send:', error);
+                    });
+            } else {
+                console.log('EmailJS not loaded - would send email to:', artistEmail);
+                console.log('Email content:', templateParams);
+            }
+        }
+
+        // Sample data storage with updated artist names
         let appointments = [
             {
                 id: 1,
                 clientName: "Alex Thunder",
                 clientEmail: "alex@email.com",
                 clientPhone: "(555) 123-4567",
-                artist: "Raven Steel",
+                artist: "Bullet",
                 tattooType: "horror",
                 size: "medium",
                 date: "2025-08-05",
@@ -623,7 +691,7 @@
                 clientName: "Maria Venom",
                 clientEmail: "maria@email.com",
                 clientPhone: "(555) 987-6543",
-                artist: "Phoenix Black",
+                artist: "Zann",
                 tattooType: "realism",
                 size: "large",
                 date: "2025-08-03",
@@ -673,6 +741,17 @@
             };
             
             appointments.push(newAppointment);
+            
+            // Send email notification to artist
+            if (newAppointment.artist && newAppointment.artist !== "Any Available Bomb Artist") {
+                sendEmailNotification(newAppointment, 'new');
+            } else {
+                // Send to all artists if no preference
+                Object.keys(artistEmails).forEach(artist => {
+                    const appointmentCopy = {...newAppointment, artist: artist};
+                    sendEmailNotification(appointmentCopy, 'new');
+                });
+            }
             
             // Show success message
             document.getElementById('clientSuccess').style.display = 'block';
@@ -764,8 +843,38 @@
             if (appointment) {
                 appointment.status = 'confirmed';
                 appointment.time = prompt('💀 Set appointment time (e.g., 14:00):') || 'TBD';
+                
+                // Send confirmation email to client
+                sendClientConfirmationEmail(appointment);
+                
                 loadArtistAppointments();
                 alert(`💣 BOOM! Appointment confirmed for ${appointment.clientName}. Explosive email notification sent!`);
+            }
+        }
+
+        // Function to send confirmation email to client
+        function sendClientConfirmationEmail(appointment) {
+            const templateParams = {
+                to_email: appointment.clientEmail,
+                client_name: appointment.clientName,
+                artist_name: appointment.artist,
+                appointment_date: appointment.date,
+                appointment_time: appointment.time,
+                tattoo_description: appointment.description,
+                shop_name: 'Bomb Tattoo Shop',
+                subject: `Appointment Confirmed - ${appointment.date} at ${appointment.time}`
+            };
+
+            if (typeof emailjs !== 'undefined') {
+                emailjs.send(emailConfig.serviceID, 'client_confirmation_template', templateParams, emailConfig.publicKey)
+                    .then(() => {
+                        console.log('Client confirmation email sent!');
+                    })
+                    .catch((error) => {
+                        console.error('Client email failed:', error);
+                    });
+            } else {
+                console.log('Would send confirmation email to client:', appointment.clientEmail);
             }
         }
 
