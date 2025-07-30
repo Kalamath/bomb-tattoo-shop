@@ -7,11 +7,14 @@
     
     <!-- PWA Meta Tags -->
     <meta name="theme-color" content="#dc2626">
+    <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Bomb Tattoo">
     <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%23000'/><circle cx='50' cy='40' r='15' fill='%23dc2626'/><rect x='40' y='55' width='20' height='8' fill='%23dc2626'/><text y='80' x='50' text-anchor='middle' dy='0.35em' font-size='12' fill='white' font-weight='bold'>BOMB</text></svg>">
-    <link rel="manifest" href="manifest.json">
+    
+    <!-- Inline manifest to avoid 404 -->
+    <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiQm9tYiBUYXR0b28gU2hvcCIsInNob3J0X25hbWUiOiJCb21iIFRhdHRvbyIsInN0YXJ0X3VybCI6Ii8iLCJkaXNwbGF5Ijoic3RhbmRhbG9uZSIsImJhY2tncm91bmRfY29sb3IiOiIjMDAwMDAwIiwidGhlbWVfY29sb3IiOiIjZGMyNjI2IiwiaWNvbnMiOlt7InNyYyI6ImRhdGE6aW1hZ2Uvc3ZnK3htbCw8c3ZnIHhtbG5zPSdodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2Zycgdmlld0JveD0nMCAwIDE5MiAxOTInPjxyZWN0IHdpZHRoPScxOTInIGhlaWdodD0nMTkyJyBmaWxsPSclMjMwMDAnLz48Y2lyY2xlIGN4PSc5NicgY3k9Jzc2JyByPSczMCcgZmlsbD0nJTIzZGMyNjI2Jy8+PHJlY3QgeD0nNzYnIHk9JzEwNicgd2lkdGg9JzQwJyBoZWlnaHQ9JzE2JyBmaWxsPSclMjNkYzI2MjYnLz48dGV4dCB5PScxNTInIHg9Jzk2JyB0ZXh0LWFuY2hvcj0nbWlkZGxlJyBkeT0nMC4zNWVtJyBmb250LXNpemU9JzI0JyBmaWxsPSd3aGl0ZScgZm9udC13ZWlnaHQ9J2JvbGQnPkJPTUI8L3RleHQ+PC9zdmc+Iiwic2l6ZXMiOiIxOTJ4MTkyIiwidHlwZSI6ImltYWdlL3N2Zyt4bWwifV19">
     
     <!-- EmailJS CDN -->
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
@@ -576,17 +579,17 @@
     </div>
 
     <script>
-        // Initialize EmailJS (replace with your actual key)
-        emailjs.init("YOUR_PUBLIC_KEY");
+        // Initialize EmailJS with the correct Public Key
+        emailjs.init("b3saCgL8dIl_Ujftw");
 
-        // SMS via Email Configuration  
+        // SMS via Email Configuration (with Marty's real number)
         const SMS_CONFIG = {
             artistNumbers: {
                 'Bullet': { phone: '5551234567', carrier: 'verizon' },
                 'PnK': { phone: '5551234568', carrier: 'att' },
                 'Zann': { phone: '5551234569', carrier: 'tmobile' },
                 'LaLa': { phone: '5551234570', carrier: 'verizon' },
-                'Marty': { phone: '5551234571', carrier: 'sprint' },
+                'Marty': { phone: '3234374368', carrier: 'verizon' },
                 'Choo': { phone: '5551234572', carrier: 'tmobile' }
             },
             shopNumber: { phone: '5551234573', carrier: 'verizon' },
@@ -595,6 +598,7 @@
                 'att': '@txt.att.net',
                 'tmobile': '@tmomail.net',
                 'sprint': '@messaging.sprintpcs.com',
+                'spectrum': '@msg.fi.google.com',
                 'uscellular': '@email.uscc.net',
                 'metropcs': '@mymetropcs.com',
                 'boost': '@sms.myboostmobile.com',
@@ -602,12 +606,11 @@
             }
         };
 
-        // Email configuration
+        // Email configuration (with your real EmailJS credentials)
         const EMAIL_CONFIG = {
-            serviceID: 'YOUR_SERVICE_ID',
-            templateID: 'YOUR_TEMPLATE_ID',
-            smsTemplateID: 'YOUR_SMS_TEMPLATE_ID',
-            shopEmail: 'bombtattoo@shop.com'
+            serviceID: 'service_1b68fku',
+            templateID: 'template_mmm2ad5',
+            shopEmail: 'bombtattooshop@gmail.com'
         };
 
         // Function to send email
@@ -619,24 +622,37 @@
             );
         }
 
-        // Function to send SMS via Email
+        // Function to send SMS via Email (put message in from_name for visibility)
         function sendSMSViaEmail(artistName, message) {
             const artist = SMS_CONFIG.artistNumbers[artistName];
             if (!artist) return Promise.resolve();
 
             const smsEmail = artist.phone + SMS_CONFIG.carrierGateways[artist.carrier];
+            console.log('Sending SMS to:', smsEmail);
             
-            const emailParams = {
-                to_email: smsEmail,
-                message: message,
-                subject: ''
-            };
-
+            // Put the SMS message in from_name so it shows up prominently
             return emailjs.send(
                 EMAIL_CONFIG.serviceID,
-                EMAIL_CONFIG.smsTemplateID,
-                emailParams
-            );
+                EMAIL_CONFIG.templateID,
+                {
+                    to_email: smsEmail,
+                    from_name: message,  // SMS message goes here - most visible field
+                    from_email: "SMS from Bomb Tattoo Shop",
+                    client_phone: "SMS Alert",
+                    preferred_artist: artistName,
+                    tattoo_style: "SMS Notification", 
+                    tattoo_size: "Alert",
+                    preferred_date: new Date().toLocaleDateString(),
+                    description: message,   // Also put it here as backup
+                    subject: ""
+                }
+            ).then((response) => {
+                console.log('SMS sent successfully:', response);
+                return response;
+            }).catch((error) => {
+                console.error('SMS send failed:', error);
+                throw error;
+            });
         }
 
         // Sample data storage
@@ -706,7 +722,7 @@
             // Send SMS to artist (primary notification)
             let smsPromise = Promise.resolve();
             if (newAppointment.artist !== "Any Available Bomb Artist" && SMS_CONFIG.artistNumbers[newAppointment.artist]) {
-                const smsMessage = `💣 NEW APPOINTMENT!\n\nClient: ${newAppointment.clientName}\nPhone: ${newAppointment.clientPhone}\nStyle: ${newAppointment.tattooType}\nDate: ${newAppointment.date}\n\n"${newAppointment.description}"\n\nCall client to confirm - Bomb Tattoo`;
+                const smsMessage = `BOMB NEW APPOINTMENT!\n\nClient: ${newAppointment.clientName}\nPhone: ${newAppointment.clientPhone}\nStyle: ${newAppointment.tattooType}\nDate: ${newAppointment.date}\n\n"${newAppointment.description}"\n\nCall client to confirm - Bomb Tattoo`;
                 
                 smsPromise = sendSMSViaEmail(newAppointment.artist, smsMessage);
             }
